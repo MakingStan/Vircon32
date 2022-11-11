@@ -1,7 +1,13 @@
+use crate::buses::control_bus::ControlBus;
+use crate::buses::memory_bus::MemoryBus;
+
 const STACK_SIZE: usize = 16; //set it so 16 for now
 const REGISTER_AMOUNT: usize = 16;
 
 pub struct Cpu {
+    memory_bus: MemoryBus,
+    control_bus: ControlBus,
+
     registers: [u32; REGISTER_AMOUNT],
     instruction_pointer: u32,
     instruction_register: u32,
@@ -15,6 +21,8 @@ impl Cpu {
     pub fn new(&mut self) -> self
     {
        Cpu {
+           memory_bus: MemoryBus::new(),
+           control_bus: ControlBus::new(),
            registers: [0; REGISTER_AMOUNT],
            instruction_pointer: 0,
            instruction_register: 0,

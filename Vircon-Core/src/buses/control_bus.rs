@@ -14,5 +14,19 @@ pub struct ControlBus {
     timer: Timer,
     gamepad_controller: GamePadController,
     memory_card_controller: MemoryCardController,
+}
 
+impl ControlBus {
+    pub fn new() -> ControlBus
+    {
+        return ControlBus {
+            gpu: Gpu::new(),
+            spu: Spu::new(),
+            rng: Rng::new(),
+            cartridge_controller: CartridgeController::new(),
+            timer: Timer::new(),
+            gamepad_controller: GamePadController::new(),
+            memory_card_controller: MemoryCardController::new()
+        }
+    }
 }

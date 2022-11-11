@@ -1,12 +1,10 @@
-mod memory_bus;
-mod control_bus;
 mod components;
+mod buses;
 
-use crate::memory_bus::*;
-use crate::control_bus::*;
+mod cpu;
 
+use crate::cpu::Cpu;
 
-struct Emulator {
-    memory_bus: MemoryBus,
-    control_bus: ControlBus
+pub struct Emulator {
+    cpu: Cpu,
 }
