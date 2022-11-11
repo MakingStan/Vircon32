@@ -29,4 +29,14 @@ impl ControlBus {
             memory_card_controller: MemoryCardController::new()
         }
     }
+
+    pub fn read_port(port: u32)
+    {
+
+    }
+
+    pub fn write_port(port: u32)
+    {
+
+    }
 }
