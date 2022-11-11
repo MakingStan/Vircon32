@@ -1,3 +1,11 @@
 .idea
 .DS_store
 Vircon32.iml
+
+./Vircon-Core/cargo.lock
+./Vircon-Core/debug/
+./Vircon-Core/target/
+
+./Vircon-Frontend/cargo.lock
+./Vircon-Frontend/debug/
+./Vircon-Frontend/target/
