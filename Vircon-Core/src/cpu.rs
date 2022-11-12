@@ -73,13 +73,13 @@ impl Cpu {
         match (opcode, immediate_value) {
             /*-----------------------------------------------------*/
             //HLT
-            (00, 0) | (00, 1) =>  {
+            (00, _) =>  {
                 self.halt_flag = true;
             }
 
             /*-----------------------------------------------------*/
             //WAIT
-            (01, 0) | (01, 1) => {
+            (01, _) => {
                 self.wait_flag = true;
             }
 
@@ -106,7 +106,7 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //RET
-            (04, 0) | (04, 1) => {
+            (04, _) => {
                 self.registers[15] -= 1;
 
                 self.instruction_pointer = self.stack[self.registers[15]];
@@ -436,7 +436,7 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //MOV
-            (19, 1) | (19, 0) => {
+            (19, _) => {
                 match addressing_mode
                 {
                     //variant 1
@@ -490,20 +490,20 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //PUSH
-            (21, 0) | (21, 1) => {
+            (21, _) => {
                 // TODO
             }
 
             /*-----------------------------------------------------*/
             //POP
-            (22, 0) | (22, 1) => {
+            (22, _) => {
                 // TODO
             }
 
 
             /*-----------------------------------------------------*/
             //IN
-            (23, 0) | (23, 1) => {
+            (23, _) => {
                 // TODO
             }
 
@@ -520,7 +520,7 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //MOVS
-            (25, 1) | (25, 0) => {
+            (25, _) => {
                 //memory[DR] = memory[SR]
                 self.memory_bus.ram[self.registers[13]] = self.memory_bus.ram[self.registers[12]];
 
@@ -541,7 +541,7 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //SETS
-            (26, 0) | (26, 1) => {
+            (26, _) => {
                 // Memory[DR] = SR
                 self.memory_bus[self.registers[13]] = self.registers[12];
 
@@ -560,7 +560,7 @@ impl Cpu {
 
             /*-----------------------------------------------------*/
             //CMPS
-            (27, 0) | (27, 1) => {
+            (27, _) => {
                 //register 1 = memory[DR] - Memory[SR]
                 self.registers[register_1] = self.memory_bus.ram[self.registers[13]]
                     .overflowing_sub(self.memory_bus.ram[self.registers[12]]);
@@ -586,13 +586,119 @@ impl Cpu {
             }
 
             /*-----------------------------------------------------*/
-            //CMPS
-            (28, 0) | (28, 1) => {
-                //convert u32 to i32
-                let binary_register_1 = u32::to_be_bytes(self.registers[register_1]);
-                let i32_register_1 = i32::from_be_bytes(binary_register_1);
+            //CIF
+            (28, _) => {
+                self.registers[register_1] = (i32_register_1 as f32) as i32; // TODO test this
+            }
 
-                //TODO convert i32 to float and store that binary form in the register
+            /*-----------------------------------------------------*/
+            //CFI
+            (29, _) => {
+                // TODO
+            }
+
+
+            /*-----------------------------------------------------*/
+            //CIB
+            (30, _) => {
+                if self.registers[register_1] != 0
+                {
+                    self.registers[register_1] = 1;
+                }
+            }
+
+
+            /*-----------------------------------------------------*/
+            //CFB
+            (31, _) => {
+                // TODO
+            }
+
+
+            /*-----------------------------------------------------*/
+            //NOT
+            (32, _) => {
+                self.registers[register_1] = !self.registers[register_1];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //AND variant 1
+            (33, 1) => {
+                self.registers[register_1] = self.registers[register_1] & self.immediate_value;
+            }
+            //AND variant 2
+            (33, 0) => {
+                self.registers[register_1] = self.registers[register_1] & self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //OR variant 1
+            (34, 1) => {
+                self.registers[register_1] = self.registers[register_1] | self.immediate_value;
+            }
+            //OR variant 2
+            (34, 0) => {
+                self.registers[register_1] = self.registers[register_1] | self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //XOR variant 1
+            (35, 1) => {
+                self.registers[register_1] = self.registers[register_1] ^ self.immediate_value;
+            }
+            //XOR variant 2
+            (35, 0) => {
+                self.registers[register_1] = self.registers[register_1] ^ self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //BNOT
+            (36, _) => {
+                if self.registers[register_1] == 0
+                {
+                    self.registers[register_1] = 1;
+                }
+                else
+                {
+                    self.registers[register_1] = 0;
+                }
+            }
+
+
+            /*-----------------------------------------------------*/
+            //SHL variant 1
+            (37, 1) => {
+                self.registers[register_1] = self.registers[register_1] << self.immediate_value;
+            }
+            //SHL variant 2
+            (37, 0) => {
+                self.registers[register_1] = self.registers[register_1] << self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //IADD variant 1
+            (38, 1) => {
+                self.registers[register_1] = self.registers[register_1].overflowing_add(self.immediate_value).0;
+            }
+            //IADD variant 2
+            (38, 0) => {
+                self.registers[register_1] = self.registers[register_1].overflowing_add(self.registers[register_2]).0;
+            }
+
+
+            /*-----------------------------------------------------*/
+            //ISUB variant 1
+            (39, 1) => {
+                self.registers[register_1] = self.registers[register_1].overflowing_sub(self.immediate_value).0;
+            }
+            //ISUB variant 2
+            (39, 0) => {
+                self.registers[register_1] = self.registers[register_1].overflowing_sub(self.registers[register_2]).0;
             }
             _ => {
                 unimplemented!("Opcode {} could not be found.", opcode)
