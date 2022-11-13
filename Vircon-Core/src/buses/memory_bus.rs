@@ -1,9 +1,8 @@
 use crate::components::memory_card_controller::{MemoryCardController};
-
-const RAM_SIZE: usize = 419_430_4;
+use crate::constants::*;
 
 pub struct MemoryBus {
-    pub ram: [i32; RAM_SIZE],
+    pub ram: [i32; RAM_SIZE as usize],
     pub memory_card: MemoryCardController, // this emulator will always have a memory card connected
 }
 

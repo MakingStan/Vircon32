@@ -1,9 +1,8 @@
-const SCREEN_WIDTH: usize = 640;
-const SCREEN_HEIGTH: usize = 360;
+use crate::constants::*;
 
 pub struct Gpu
 {
-    drawing_buffer: [[u32; SCREEN_HEIGTH]; SCREEN_WIDTH],
+    drawing_buffer: [[u32; SCREEN_HEIGTH]; SCREEN_WIDTH as usize],
 }
 
 impl Gpu
@@ -13,6 +12,11 @@ impl Gpu
         return Gpu {
             drawing_buffer: [[0; SCREEN_HEIGTH]; SCREEN_WIDTH]
         }
+    }
+
+    pub fn draw_region()
+    {
+
     }
 
     pub fn clear(&mut self, color: u32)

@@ -8,10 +8,10 @@ pub struct Cpu {
     memory_bus: MemoryBus,
     control_bus: ControlBus,
 
-    registers: [u32; REGISTER_AMOUNT],
-    instruction_pointer: u32,
-    instruction_register: u32,
-    immediate_value: u32,
+    registers: [i32; REGISTER_AMOUNT],
+    instruction_pointer: i32,
+    instruction_register: i32,
+    immediate_value: i32,
     halt_flag: bool,
     wait_flag: bool,
     stack: [i32; STACK_SIZE]
@@ -672,37 +672,150 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //SHL variant 1
             (37, 1) => {
-                self.registers[register_1] = self.registers[register_1] << self.immediate_value;
+                // Allow negative shifts
+                if self.immediate_value > 0
+                {
+                    self.registers[register_1] <<= self.immediate_value;
+                }
+                else
+                {
+                    self.registers[register_1] >>= -self.immediate_value;
+                }
             }
             //SHL variant 2
             (37, 0) => {
-                self.registers[register_1] = self.registers[register_1] << self.registers[register_2];
+                // Allow negative shifts
+                if self.registers[register_2] > 0
+                {
+                    self.registers[register_1] <<= self.registers[register_2];
+                }
+                else
+                {
+                    self.registers[register_1] >>= -self.registers[register_2];
+                }
             }
 
 
             /*-----------------------------------------------------*/
             //IADD variant 1
             (38, 1) => {
-                self.registers[register_1] = self.registers[register_1].overflowing_add(self.immediate_value).0;
+                self.registers[register_1] += self.immediate_value;
             }
             //IADD variant 2
             (38, 0) => {
-                self.registers[register_1] = self.registers[register_1].overflowing_add(self.registers[register_2]).0;
+                self.registers[register_1] += self.registers[register_2];
             }
 
 
             /*-----------------------------------------------------*/
             //ISUB variant 1
             (39, 1) => {
-                self.registers[register_1] = self.registers[register_1].overflowing_sub(self.immediate_value).0;
+                self.registers[register_1] -= self.immediate_value;
             }
             //ISUB variant 2
             (39, 0) => {
-                self.registers[register_1] = self.registers[register_1].overflowing_sub(self.registers[register_2]).0;
+                self.registers[register_1] -= self.registers[register_2];
             }
+
+
+            /*-----------------------------------------------------*/
+            //IMUL variant 1
+            (40, 1) => {
+                self.registers[register_1] *= self.immediate_value;
+            }
+            //IMUL variant 2
+            (40, 0) => {
+                self.registers[register_1] *= self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //IDIV variant 1
+            (41, 1) => {
+                self.registers[register_1] /= self.immediate_value;
+            }
+            //IDIV variant 2
+            (41, 0) => {
+                self.registers[register_1] /= self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //IMOD variant 1
+            (42, 1) => {
+                self.registers[register_1] %= self.immediate_value;
+            }
+            //IMOD variant 2
+            (42, 0) => {
+                self.registers[register_1] %= self.registers[register_2];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //ISIGN
+            (43, _) => {
+                self.registers[register_1] = -self.registers[register_1];
+            }
+
+
+            /*-----------------------------------------------------*/
+            //IMIN variant 1
+            (44, 1) => {
+                self.registers[register_1] = min(self.registers[register_1], self.immediate_value);
+            }
+            //IMIN variant 2
+            (44, 0) => {
+                self.registers[register_1] = min(self.registers[register_1], self.registers[register_2]);
+            }
+
+
+            /*-----------------------------------------------------*/
+            //IMAX variant 1
+            (45, 1) => {
+                self.registers[register_1] = max(self.registers[register_1], self.immediate_value);
+            }
+            //IMAX variant 2
+            (45, 0) => {
+                self.registers[register_1] = max(self.registers[register_1], self.registers[register_2]);
+            }
+
+            /*-----------------------------------------------------*/
+            //IABS
+            (46, _) => {
+                if self.registers[register_1] < 0
+                {
+                    self.registers[register_1] = -self.registers[register_1];
+                }
+            }
+
             _ => {
                 unimplemented!("Opcode {} could not be found.", opcode)
             }
         }
+        fn min(value1: i32, value2: i32) -> i32
+        {
+            if value1 > value2
+            {
+                return value2;
+            }
+            else
+            {
+                return value1;
+            }
+        }
+
+        fn max(value1: i32, value2: i32) -> i32
+        {
+            if value1 > value2
+            {
+                return value1;
+            }
+            else
+            {
+                return value2;
+            }
+        }
     }
+
+
 }

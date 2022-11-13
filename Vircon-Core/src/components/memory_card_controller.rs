@@ -1,7 +1,7 @@
-const MEMORY_CARD_SIZE: usize = 262_144;
+use crate::constants::*;
 
 pub struct MemoryCardController {
-    memory: [u32; MEMORY_CARD_SIZE] // assuming it's always plugged in
+    memory: [u32; MEMORY_CARD_SIZE as usize] // assuming it's always plugged in
 }
 
 impl MemoryCardController {

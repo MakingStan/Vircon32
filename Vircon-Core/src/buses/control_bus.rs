@@ -6,7 +6,9 @@ use crate::components::rng::Rng;
 use crate::components::spu::Spu;
 use crate::components::timer::Timer;
 
+const ControlBusSlaves()
 pub struct ControlBus {
+    slaves:
     gpu: Gpu,
     spu: Spu,
     rng: Rng,
@@ -30,9 +32,11 @@ impl ControlBus {
         }
     }
 
-    pub fn read_port(port: u32)
+    pub fn read_port(port: i32)
     {
-
+        // separate device ID and local address
+        device_id: i32 = (port >> 8) & 7;
+        local_port: i32 = port & 0xFF;
     }
 
     pub fn write_port(port: u32)
