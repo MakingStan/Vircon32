@@ -1,9 +1,23 @@
 use crate::constants::*;
+use crate::components::vircon_component::VirconComponent;
+
+use log::*;
 
 pub struct Gpu
 {
-    drawing_buffer: [[u32; SCREEN_HEIGTH]; SCREEN_WIDTH as usize],
+    pub drawing_buffer: [[u32; SCREEN_HEIGTH]; SCREEN_WIDTH as usize],
 }
+
+impl VirconComponent for Gpu {
+    fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        todo!()
+    }
+
+    fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        todo!()
+    }
+}
+
 
 impl Gpu
 {
@@ -14,20 +28,11 @@ impl Gpu
         }
     }
 
-    pub fn draw_region()
-    {
-
-    }
-
     pub fn clear(&mut self, color: u32)
     {
-        //loop through the whole drawing_buffer and make all of the pixels the clear color
-        for x in self.drawing_buffer.len()
-        {
-            for y in self.drawing_buffer[x].len()
-            {
-                self.drawing_buffer[x][y] = color;
-            }
-        }
+        info!("Clearing screen buffer...");
+
+        //Set the drawing buffer equal to an array with only one color
+        self.drawing_buffer = [[color: SCREEN_HEIGHT]; SCREEN_WIDTH];
     }
 }

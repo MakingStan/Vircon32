@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 min-max = "0.1"
+log = "0.4.17"

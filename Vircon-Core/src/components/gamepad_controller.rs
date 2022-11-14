@@ -1,4 +1,5 @@
 use crate::constants::MAXIMUM_GAMEPADS;
+use crate::components::vircon_component::VirconComponent;
 
 
 struct GamePad
@@ -17,6 +18,7 @@ struct GamePad
     button_r: i32,
 
 }
+
 
 impl GamePad {
     pub fn new() -> GamePad
@@ -44,6 +46,15 @@ pub struct GamePadController {
     provided_gamepad_states: [GamePad; MAXIMUM_GAMEPADS as usize]
 }
 
+impl VirconComponent for GamePadController {
+    fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        todo!()
+    }
+
+    fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        todo!()
+    }
+}
 
 impl GamePadController {
     pub fn reset(&mut self)
@@ -53,13 +64,13 @@ impl GamePadController {
     }
     pub fn new() -> GamePadController
     {
-        let gamepad_controller = GamePadController {
+        let mut gamepad_controller = GamePadController {
             selected_gamepad: 0,
             realtime_gaempad_states: [GamePad::new(); MAXIMUM_GAMEPADS],
             provided_gamepad_states: [GamePad::new(); MAXIMUM_GAMEPADS]
         };
 
-        gamepad_controller.reset
+        gamepad_controller.reset();
         return gamepad_controller;
     }
 
