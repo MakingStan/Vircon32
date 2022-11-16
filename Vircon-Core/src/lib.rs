@@ -3,6 +3,7 @@ mod buses;
 
 mod cpu;
 mod constants;
+mod local_ports;
 
 use crate::cpu::Cpu;
 

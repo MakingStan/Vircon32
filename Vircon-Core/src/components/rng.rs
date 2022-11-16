@@ -1,6 +1,6 @@
 use std::thread::current;
 use crate::components::vircon_component::VirconComponent;
-use crate::constants::{RNG_FIRST_PORT, RNG_LOCAL_CURRENT_VALUE_PORT};
+use crate::local_ports::RngLocalPorts;
 
 pub struct Rng {
     current_value: i32,
@@ -25,7 +25,7 @@ impl Rng()
 impl VirconComponent for Rng {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
         //Check range
-        if local_port != RNG_LOCAL_CURRENT_VALUE_PORT {
+        if local_port != RngLocalPorts::CurrentValue as i32 {
             return false;
         }
 
