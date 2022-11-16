@@ -3,3 +3,10 @@ pub enum RngLocalPorts {
     CurrentValue = 0,
 }
 
+//Timer local ports
+pub enum TimerLocalPorts {
+    CurrentDate = 0,
+    CurrentTime,
+    FrameCounter,
+    CycleCounter
+}
