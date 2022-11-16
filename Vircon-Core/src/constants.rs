@@ -55,3 +55,6 @@ pub const SPU_FIRST_PORT: i32 = 0x300;
 pub const INP_FIRST_PORT: i32 = 0x400;
 pub const CAR_FIRST_PORT: i32 = 0x500;
 pub const MEM_FIRST_PORT: i32 = 0x600;
+
+//RNG local ports
+pub const RNG_LOCAL_CURRENT_VALUE_PORT: i32 = 0;
