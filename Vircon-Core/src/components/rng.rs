@@ -1,4 +1,3 @@
-use std::thread::current;
 use crate::components::vircon_component::VirconComponent;
 use crate::local_ports::RngLocalPorts;
 
