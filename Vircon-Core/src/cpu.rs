@@ -437,6 +437,7 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //MOV
             (19, _) => {
+                let mut success = true;
                 match addressing_mode
                 {
                     //variant 1
@@ -449,31 +450,36 @@ impl Cpu {
                     }
                     //variant 3
                     2 => {
-                        self.registers[register_1] = self.memory_bus.ram[self.immediate_value];
+                        success = self.memory_bus.ram.read_address(self.immediate_value, &mut self.registers[register_1])
                     }
                     //variant 4
                     3 => {
-                        self.registers[register_1] = self.memory_bus.ram[self.registers[register_2]];
+                        success = self.memory_bus.ram.read_address(self.registers[register_2], &mut self.registers[register_1]);
                     }
                     //variant 5
                     4 => {
-                        self.registers[register_1] = self.memory_bus.ram(self.registers[register_2] + self.immediate_value);
+                        success = self.memory_bus.ram.read_address(self.registers[register_2] + self.immediate_value, self.registers[register_1]);
                     }
                     //variant 6
                     5 => {
-                        self.memory_bus.ram[immediate_value] = self.registers[register_2];
+                        success = self.memory_bus.ram.write_address(self.immediate_value, self.registers[register_2]);
                     }
                     //variant 7
                     6 => {
-                        self.memory_bus.ram[self.registers[register_1]] = self.registers[register_2];
+                        success = self.memory_bus.ram.write_address(self.registers[register_1], self.registers[register_2]);
                     }
-                    //variant 7
+                    //variant 8
                     7 => {
-                        self.memory_bus.ram[self.registers[register_1] + self.immediate_value] = self.registers[register_2];
+                        success = self.memory_bus.ram.write_address(self.registers[register_1] + self.immediate_value, self.registers[register_2]);
                     }
                     _ => {
                         /* This should be impossible to reach, because the max value that 3 bits can hold is 7 */
                     }
+                }
+
+                //handle hardware errors if any read and write didn't go properly
+                if !success {
+                    //handle the hardware error
                 }
             }
 
@@ -522,7 +528,13 @@ impl Cpu {
             //MOVS
             (25, _) => {
                 //memory[DR] = memory[SR]
-                self.memory_bus.ram[self.registers[13]] = self.memory_bus.ram[self.registers[12]];
+                let mut memory_sr = &mut self.registers[12];
+
+                let success = self.memory_bus.ram.read_address(self.registers[13], &mut memory_sr);
+
+                if !success {
+                    //handle hardware error
+                }
 
                 //DR += 1
                 self.registers[13] = self.registers[13].overflowing_add(1).0;
@@ -562,8 +574,22 @@ impl Cpu {
             //CMPS
             (27, _) => {
                 //register 1 = memory[DR] - Memory[SR]
-                self.registers[register_1] = self.memory_bus.ram[self.registers[13]]
-                    .overflowing_sub(self.memory_bus.ram[self.registers[12]]);
+                let mut memory_dr = 0;
+                let mut memory_sr = 0;
+                let mut success: bool = false;
+
+                success = self.memory_bus.ram.read_address(self.registers[12], &mut memory_sr);
+                if !success {
+                    //handle hardware error
+                }
+
+                success = self.memory_bus.ram.read_address(self.registers[13], &mut memory_dr);
+                if !success {
+                    //handle hardware error
+                }
+
+
+                self.registers[register_1] = memory_dr.overflowing_sub(memory_sr);
 
                 if self.registers[register_1] != 0
                 {
