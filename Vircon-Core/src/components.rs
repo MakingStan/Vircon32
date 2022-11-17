@@ -6,3 +6,4 @@ pub mod timer;
 pub mod gamepad_controller;
 pub mod gpu;
 pub mod vircon_component;
+pub mod ram;
