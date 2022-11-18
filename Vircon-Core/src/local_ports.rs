@@ -10,3 +10,11 @@ pub enum TimerLocalPorts {
     FrameCounter,
     CycleCounter
 }
+
+// Cartridge controller local ports
+pub enum CartridgeControllerLocalPorts {
+    Connected,
+    ProgramRomSize,
+    NumberOfTextures,
+    NumberOfSounds,
+}
