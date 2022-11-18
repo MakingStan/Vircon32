@@ -16,7 +16,7 @@ pub struct CartridgeController {
 impl VirconComponent for CartridgeController {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
         //check range
-        if local_port > CartridgeControllerLocalPorts::NumberOfSounds 
+        if local_port > CartridgeControllerLocalPorts::NumberOfSounds as i32
         {
             return false;
         }
