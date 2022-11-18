@@ -1,4 +1,5 @@
 use crate::constants::RAM_SIZE;
+use crate::constants::RAM_PREFIX;
 use log::*;
 use crate::components::vircon_component::VirconComponent;
 
@@ -11,6 +12,7 @@ impl Ram
 {
     pub fn new() -> Ram
     {
+        info!("{} Creating new RAM...", RAM_PREFIX);
         return Ram {
             ram: [0; RAM_SIZE]
         }
@@ -18,7 +20,7 @@ impl Ram
 
     pub fn clear_memory(&mut self)
     {
-        info!("Clearing RAM memory");
+        info!("{} Clearing RAM memory..", RAM_PREFIX);
 
         // clear previous memory
         self.ram = [0; RAM_SIZE];
@@ -26,7 +28,7 @@ impl Ram
 
     pub fn write_address(&mut self, local_address: i32, value: i32) -> bool
     {
-        info!("Writing the value \"{}\" at local address \"{}\"", value, local_address);
+        info!("{} Writing value \"{}\" at local address \"{}\"", RAM_PREFIX, value, local_address);
 
         if local_address >= RAM_SIZE
         {
@@ -39,7 +41,7 @@ impl Ram
 
     pub fn read_address(&mut self, local_address: i32, mut result: &mut i32) -> bool
     {
-        info!("Reading from ram and storing it into a variable at local_address \"{}\"", local_address);
+        info!("{} Reading local address \"{}\"", RAM_PREFIX, local_address);
 
         if local_address >= RAM_SIZE
         {

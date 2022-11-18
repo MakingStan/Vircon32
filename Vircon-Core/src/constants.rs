@@ -55,3 +55,16 @@ pub const SPU_FIRST_PORT: i32 = 0x300;
 pub const INP_FIRST_PORT: i32 = 0x400;
 pub const CAR_FIRST_PORT: i32 = 0x500;
 pub const MEM_FIRST_PORT: i32 = 0x600;
+
+// logging prefixes
+pub const RNG_PREFIX: String = String::from("RNG:");
+pub const RAM_PREFIX: String = String::from("RAM:");
+pub const GPU_PREFIX: String = String::from("GPU:");
+pub const SPU_PREFIX: String = String::from("SPU:");
+pub const CPU_PREFIX: String = String::from("CPU:");
+pub const TIMER_PREFIX: String = String::from("TIMER:");
+pub const MEMORY_BUS_PREFIX: String = String::from("MEMORY_BUS:");
+pub const CONTROL_BUS_PREFIX: String = String::from("CONTROL_BUS:");
+pub const GAMEPAD_CONTROLLER_PREFIX: String = String::from("GAMEPAD_CONTROLLER:");
+pub const CARTRIDGE_CONTROLLER_PREFIX: String = String::from("CARTRIDGE_CONTROLLER:");
+pub const MEMORY_CARD_CONTROLLER_PREFIX: String = String::from("MEMORY_CARD_CONTROLLER:");

@@ -1,7 +1,8 @@
+use log::info;
 use crate::components::memory_card_controller::{MemoryCardController};
 use crate::components::ram::Ram;
 use crate::components::vircon_component::VirconComponent;
-use crate::constants::*;
+use crate::constants::MEMORY_BUS_PREFIX;
 
 pub struct MemoryBus {
     pub ram: Ram,
@@ -19,6 +20,8 @@ impl MemoryBus {
 
     pub fn read_port(&mut self, global_port: i32, mut result: &mut i32) -> bool
     {
+        info!("{} Reading global port {}", MEMORY_BUS_PREFIX, global_port);
+
         // separate device ID and local address
         let device_id: i32 = (global_port >> 8) & 7;
         let local_port: i32 = global_port & 0xFF;
@@ -32,6 +35,8 @@ impl MemoryBus {
 
     pub fn write_port(&mut self, global_port: i32, value: i32) -> bool
     {
+        info!("{} Writing value \"{}\" to global port \"{}\"", MEMORY_BUS_PREFIX, value, global_port);
+
         // separate device ID and local address
         let device_id: i32 = (global_port >> 8) & 7;
         let local_port: i32 = global_port & 0xFF;

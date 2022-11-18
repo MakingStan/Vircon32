@@ -1,5 +1,6 @@
 use log::info;
-use crate::constants::*;
+use crate::constants::MEMORY_CARD_CONTROLLER_PREFIX;
+use crate::constants::MEMORY_CARD_SIZE;
 use crate::components::vircon_component::VirconComponent;
 
 pub struct MemoryCardController {
@@ -8,16 +9,19 @@ pub struct MemoryCardController {
 
 impl VirconComponent for MemoryCardController {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        info!("{} Reading local port \"{}\"", MEMORY_CARD_CONTROLLER_PREFIX,  local_port);
         todo!()
     }
 
     fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        info!("{} Writing value \"{}\" to local port \"{}\"", MEMORY_CARD_CONTROLLER_PREFIX, value, local_port);
         todo!()
     }
 }
 impl MemoryCardController {
     pub fn new() -> MemoryCardController
     {
+        info!("{} Creating new MemoryCardController...", MEMORY_CARD_CONTROLLER_PREFIX);
         MemoryCardController
         {
             memory: [0; MEMORY_CARD_SIZE]
@@ -26,7 +30,7 @@ impl MemoryCardController {
 
     pub fn load_memory(&mut self, data: &[u8])
     {
-        info!("Loading memory card contents into memory...");
+        info!("{} Loading memory card contents into memory...", MEMORY_CARD_CONTROLLER_PREFIX);
         let new_data: Vec<u32> = Vec::new();
 
         //convert u8 array to u32 array
@@ -56,12 +60,5 @@ impl MemoryCardController {
 
         //copy the data into memory
         self.memory[0..new_data.len()].copy_from_slice(new_data.as_slice());
-    }
-
-
-
-    pub fn read_port(local_port: i32)
-    {
-
     }
 }

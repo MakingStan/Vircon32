@@ -1,4 +1,6 @@
+use log::info;
 use crate::constants::MAXIMUM_GAMEPADS;
+use crate::constants::GAMEPAD_CONTROLLER_PREFIX;
 use crate::components::vircon_component::VirconComponent;
 
 
@@ -48,10 +50,12 @@ pub struct GamePadController {
 
 impl VirconComponent for GamePadController {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        info!("{} Reading local port \"{}\"", GAMEPAD_CONTROLLER_PREFIX, local_port);
         todo!()
     }
 
     fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        info!("{} Writing value \"{}\" to local port \"{}\"", GAMEPAD_CONTROLLER_PREFIX, value, local_port);
         todo!()
     }
 }
@@ -59,11 +63,13 @@ impl VirconComponent for GamePadController {
 impl GamePadController {
     pub fn reset(&mut self)
     {
+        info!("{} Resetting GamePadController...", GAMEPAD_CONTROLLER_PREFIX);
         // Set the first gamepad as selected
         self.selected_gamepad = 0;
     }
     pub fn new() -> GamePadController
     {
+        info!("{} Creating new GamePadController...", GAMEPAD_CONTROLLER_PREFIX);
         let mut gamepad_controller = GamePadController {
             selected_gamepad: 0,
             realtime_gaempad_states: [GamePad::new(); MAXIMUM_GAMEPADS],

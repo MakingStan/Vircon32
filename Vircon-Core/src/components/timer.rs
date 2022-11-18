@@ -1,8 +1,9 @@
-use std::ops::Sub;
 use crate::components::vircon_component::VirconComponent;
 use crate::local_ports::TimerLocalPorts;
+use crate::constants::TIMER_PREFIX;
 use chrono::{Datelike, DateTime, NaiveDate, prelude, Timelike};
 use chrono::Local;
+use log::info;
 
 pub struct Timer {
     current_date: i32,
@@ -14,6 +15,8 @@ pub struct Timer {
 impl Timer {
     pub fn new() -> Timer
     {
+        info!("{} Creating a new Timer...", TIMER_PREFIX);
+
         let mut timer =  Timer {
             current_date: 0,
             current_time: 0,
@@ -46,6 +49,8 @@ impl Timer {
 
     pub fn reset(&mut self)
     {
+        info!("{} Resetting Timer...", TIMER_PREFIX);
+
         self.cycle_counter = 0;
         self.frame_counter = 0;
     }
@@ -94,6 +99,7 @@ impl Timer {
 
 impl VirconComponent for Timer {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        info!("{} Reading local port \"{}\"", TIMER_PREFIX, local_port);
         //Check range
         if local_port > TimerLocalPorts::CycleCounter as i32 { /*cycle counter is the latest element*/
             return false;
@@ -118,6 +124,8 @@ impl VirconComponent for Timer {
     }
 
     fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        info!("{} writing port request will be ignored as all registers are read-only.", TIMER_PREFIX);
+
         // ignore write request (all these registers are read-only)
         return false;
     }

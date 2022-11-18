@@ -1,4 +1,6 @@
+use log::info;
 use crate::components::vircon_component::VirconComponent;
+use crate::constants::RNG_PREFIX;
 use crate::local_ports::RngLocalPorts;
 
 pub struct Rng {
@@ -9,6 +11,8 @@ impl Rng()
 {
     pub fn new() -> Rng
     {
+        info!("{} Creating new RNG...", RNG_PREFIX);
+
         return Rng {
             // do not use a Seed value of 0!
             current_value: 1,
@@ -23,6 +27,8 @@ impl Rng()
 
 impl VirconComponent for Rng {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        info!("{} Reading local port \"{}\"", RNG_PREFIX, local_port);
+
         //Check range
         if local_port != RngLocalPorts::CurrentValue as i32 {
             return false;
@@ -40,6 +46,8 @@ impl VirconComponent for Rng {
     }
 
     fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        info!("{} Writing value \"{}\" to local port \"{}\"", RNG_PREFIX, value, local_port);
+
         //Check range
         if local_port != RNG_LOCAL_CURRENT_VALUE_PORT {
             return false;

@@ -1,3 +1,4 @@
+use log::info;
 use crate::components::cartridge_controller::CartridgeController;
 use crate::components::gamepad_controller::GamePadController;
 use crate::components::gpu::Gpu;
@@ -7,6 +8,7 @@ use crate::components::spu::Spu;
 use crate::components::timer::Timer;
 use crate::components::vircon_component::VirconComponent;
 
+use crate::constants::CONTROL_BUS_PREFIX;
 
 pub struct ControlBus {
     gpu: Gpu,
@@ -21,6 +23,8 @@ pub struct ControlBus {
 impl ControlBus {
     pub fn new() -> ControlBus
     {
+        info!("{} Creating new ControlBus...", CONTROL_BUS_PREFIX);
+
         return ControlBus {
             gpu: Gpu::new(),
             spu: Spu::new(),
@@ -34,6 +38,8 @@ impl ControlBus {
 
     pub fn read_port(&mut self, global_port: i32, mut result: &mut i32) -> bool
     {
+        info!("{} Reading global port \"{}\"", global_port);
+
         // separate device ID and local address
         let device_id: i32 = (global_port >> 8) & 7;
         let local_port: i32 = global_port & 0xFF;
@@ -47,6 +53,8 @@ impl ControlBus {
 
     pub fn write_port(&mut self, global_port: i32, value: i32) -> bool
     {
+        info!("{} Writing value \"{}\" to global port \"{}\"", CONTROL_BUS_PREFIX, value, global_port);
+
         // separate device ID and local address
         let device_id: i32 = (global_port >> 8) & 7;
         let local_port: i32 = global_port & 0xFF;

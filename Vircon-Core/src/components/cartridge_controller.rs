@@ -1,3 +1,5 @@
+use log::info;
+use crate::constants::CARTRIDGE_CONTROLLER_PREFIX;
 use crate::components::vircon_component::VirconComponent;
 use crate::local_ports::CartridgeControllerLocalPorts;
 
@@ -15,6 +17,8 @@ pub struct CartridgeController {
 
 impl VirconComponent for CartridgeController {
     fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+        info!("{} Reading local port \"{}\"", CARTRIDGE_CONTROLLER_PREFIX, local_port);
+
         //check range
         if local_port > CartridgeControllerLocalPorts::NumberOfSounds as i32
         {
@@ -39,6 +43,7 @@ impl VirconComponent for CartridgeController {
     }
 
     fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+        info!("{} Writing value \"{}\" to local port \"{}\"", CARTRIDGE_CONTROLLER_PREFIX, value, local_port);
         // all these registers are read-only, so just ignore the request
         return false;
     }
@@ -49,6 +54,7 @@ impl CartridgeController
 {
     pub fn new() -> CartridgeController
     {
+        info!("{} Creating new CartridgeController...", CARTRIDGE_CONTROLLER_PREFIX);
         return CartridgeController {
             number_of_textures: 0,
             number_of_sounds: 0,

@@ -1,3 +1,4 @@
+use log::info;
 use crate::buses::control_bus::ControlBus;
 use crate::buses::memory_bus::MemoryBus;
 
@@ -20,17 +21,18 @@ pub struct Cpu {
 impl Cpu {
     pub fn new(&mut self) -> self
     {
-       Cpu {
-           memory_bus: MemoryBus::new(),
-           control_bus: ControlBus::new(),
-           registers: [0; REGISTER_AMOUNT],
-           instruction_pointer: 0,
-           instruction_register: 0,
-           immediate_value: 0,
-           halt_flag: false,
-           wait_flag: false,
-           stack: [0; REGISTER_AMOUNT]
-       }
+        info!("{} Creating new CPU...", CPU_PREFIX);
+        Cpu {
+            memory_bus: MemoryBus::new(),
+            control_bus: ControlBus::new(),
+            registers: [0; REGISTER_AMOUNT],
+            instruction_pointer: 0,
+            instruction_register: 0,
+            immediate_value: 0,
+            halt_flag: false,
+            wait_flag: false,
+            stack: [0; REGISTER_AMOUNT]
+        }
     }
 
     pub fn cycle(&mut self)
