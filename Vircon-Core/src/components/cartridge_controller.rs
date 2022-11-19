@@ -8,6 +8,9 @@ pub struct CartridgeController {
     number_of_textures: i32,
     number_of_sounds: i32,
 
+    // cartridge memory size
+    memory_size: i32,
+
     // Additional data about the connected cartridge
     cartridge_file_name: String,
     cartridge_title: String,
@@ -27,10 +30,15 @@ impl VirconComponent for CartridgeController {
 
         //provide value
         if local_port == CartridgeControllerLocalPorts::Connected as i32 {
-            todo!()
+            if self.memory_size > 0 {
+                *result = 1;
+            }
+            else {
+                *result = 0;
+            }
         }
         else if local_port == CartridgeControllerLocalPorts::ProgramRomSize as i32 {
-            todo!()
+            *result = self.memory_size;
         }
         else if local_port == CartridgeControllerLocalPorts::NumberOfTextures as i32{
             *result = self.number_of_textures;
@@ -58,6 +66,8 @@ impl CartridgeController
         return CartridgeController {
             number_of_textures: 0,
             number_of_sounds: 0,
+
+            memory_size: 0,
 
             cartridge_file_name: String::new(),
             cartridge_title: String::new(),
