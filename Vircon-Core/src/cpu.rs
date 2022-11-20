@@ -22,7 +22,7 @@ impl Cpu {
     pub fn new(&mut self) -> self
     {
         info!("{} Creating new CPU...", CPU_PREFIX);
-        Cpu {
+        return Cpu {
             memory_bus: MemoryBus::new(),
             control_bus: ControlBus::new(),
             registers: [0; REGISTER_AMOUNT],
@@ -31,8 +31,24 @@ impl Cpu {
             immediate_value: 0,
             halt_flag: false,
             wait_flag: false,
+
             stack: [0; REGISTER_AMOUNT]
-        }
+        };
+    }
+
+    fn stack_push(&mut self, value: i32)
+    {
+        let stack_pointer = self.registers[15];
+        self.stack[stack_pointer] = value;
+
+        self.registers[15] -= 1;
+    }
+
+    fn stack_pop(&mut self) -> i32
+    {
+        self.registers[15] += 1;
+
+        return self.stack[self.registers[15]];
     }
 
     pub fn cycle(&mut self)
@@ -99,11 +115,13 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //CALL variant 1
             (03, 1) => {
-                // TODO
+                self.stack_push(self.instruction_pointer);
+                self.instruction_pointer = self.immediate_value;
             }
             //CALL variant 2
             (03, 0) => {
-                // TODO
+                self.stack_push(self.instruction_pointer);
+                self.instruction_pointer = self.registers[register_1];
             }
 
             /*-----------------------------------------------------*/
@@ -499,31 +517,31 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //PUSH
             (21, _) => {
-                // TODO
+                self.stack_push(self.registers[register_1]);
             }
 
             /*-----------------------------------------------------*/
             //POP
             (22, _) => {
-                // TODO
+                self.registers[register_1] = self.stack_pop();
             }
 
 
             /*-----------------------------------------------------*/
             //IN
             (23, _) => {
-                // TODO
+                self.control_bus.read_port(port_number as i32, &mut self.registers[register_1]);
             }
 
             /*-----------------------------------------------------*/
             //OUT variant 1
             (24, 1) => {
-                // TODO
+                self.control_bus.write_port(port_number as i32, self.immediate_value);
             }
 
             //OUT variant 2
             (24, 0) => {
-                // TODO
+                self.control_bus.write_port(port_number as i32, self.registers[register_1]);
             }
 
             /*-----------------------------------------------------*/
