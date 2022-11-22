@@ -4,6 +4,7 @@ use crate::constants::TIMER_PREFIX;
 use chrono::{Datelike, DateTime, NaiveDate, prelude, Timelike};
 use chrono::Local;
 use log::info;
+use crate::vircon_word::VirconWord;
 
 pub struct Timer {
     current_date: i32,
@@ -98,7 +99,7 @@ impl Timer {
 }
 
 impl VirconComponent for Timer {
-    fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+    fn read_port(&mut self, local_port: i32, result: &mut VirconWord) -> bool {
         info!("{} Reading local port \"{}\"", TIMER_PREFIX, local_port);
         //Check range
         if local_port > TimerLocalPorts::CycleCounter as i32 { /*cycle counter is the latest element*/
@@ -108,22 +109,22 @@ impl VirconComponent for Timer {
         // provide value (for efficiency, do the checks
         // starting by the most frequently accessed ports)
         if local_port == TimerLocalPorts::FrameCounter as i32 {
-            *result = self.frame_counter;
+            *result.as_integer = self.frame_counter;
         }
         else  if local_port == TimerLocalPorts::CycleCounter as i32 {
-            *result = self.cycle_counter;
+            *result.as_integer = self.cycle_counter;
         }
         else if local_port == TimerLocalPorts::CurrentTime as i32 {
-            *result = self.current_time;
+            *result.as_integer = self.current_time;
         }
         else {
-            *result = self.current_date;
+            *result.as_integer = self.current_date;
         }
 
         return true;
     }
 
-    fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+    fn write_port(&mut self, local_port: i32, value: VirconWord) -> bool {
         info!("{} writing port request will be ignored as all registers are read-only.", TIMER_PREFIX);
 
         // ignore write request (all these registers are read-only)

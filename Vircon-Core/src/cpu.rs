@@ -1,4 +1,5 @@
 use log::info;
+use crate::vircon_word::VirconWord;
 use crate::buses::control_bus::ControlBus;
 use crate::buses::memory_bus::MemoryBus;
 
@@ -9,13 +10,13 @@ pub struct Cpu {
     memory_bus: MemoryBus,
     control_bus: ControlBus,
 
-    registers: [i32; REGISTER_AMOUNT],
-    instruction_pointer: i32,
-    instruction_register: i32,
-    immediate_value: i32,
+    registers: [VirconWord; REGISTER_AMOUNT],
+    instruction_pointer: VirconWord,
+    instruction_register: VirconWord,
+    immediate_value: VirconWord,
     halt_flag: bool,
     wait_flag: bool,
-    stack: [i32; STACK_SIZE]
+    stack: [VirconWord; STACK_SIZE]
 }
 
 impl Cpu {
@@ -25,59 +26,61 @@ impl Cpu {
         return Cpu {
             memory_bus: MemoryBus::new(),
             control_bus: ControlBus::new(),
-            registers: [0; REGISTER_AMOUNT],
-            instruction_pointer: 0,
-            instruction_register: 0,
-            immediate_value: 0,
+
+            registers: [VirconWord::new(); REGISTER_AMOUNT],
+            instruction_pointer: VirconWord::new(),
+            instruction_register: VirconWord::new(),
+            immediate_value: VirconWord::new(),
             halt_flag: false,
             wait_flag: false,
 
-            stack: [0; REGISTER_AMOUNT]
+            stack: [VirconWord; REGISTER_AMOUNT]
         };
     }
 
     fn stack_push(&mut self, value: i32)
     {
-        let stack_pointer = self.registers[15];
-        self.stack[stack_pointer] = value;
+        self.stack[self.registers[15].as_integer].as_integer = value;
 
-        self.registers[15] -= 1;
+        self.registers[15].as_integer -= 1;
     }
 
-    fn stack_pop(&mut self) -> i32
+    fn stack_pop(&mut self) -> VirconWord
     {
-        self.registers[15] += 1;
+        self.registers[15].as_integer += 1;
 
-        return self.stack[self.registers[15]];
+        return self.stack[self.registers[15].as_integer];
     }
 
     pub fn cycle(&mut self)
     {
         //Read next instruction
         let instruction = read_next_instruction();
-        self.instruction_register = instruction;
+        self.instruction_register.as_integer = instruction;
 
         //Get immediate value from instruction
-        let immediate_value: u32 = (instruction & 0b11111111111111111111111111) >> 25;
+        let immediate_value_bit: u32 = (instruction & 0b11111111111111111111111111) >> 25;
 
         //Is the immediate value bit = 1?
-        if immediate_value == 1
+        if immediate_value_bit == 1
         {
-            //Store the instruciton in the immediate value
-            self.immediate_value = read_next_instruction();
+            //Store the instruction in the immediate value
+            self.immediate_value.as_integer = read_next_instruction();
         }
 
-        self.execute(instruction, immediate_value);
+        self.execute(instruction, immediate_value_bit);
     }
 
-    fn read_next_instruction(&mut self) -> u32
+    fn read_next_instruction(&mut self) -> VirconWord
     {
         /* TODO fetch next instruction */
-        self.instruction_pointer+=1;
-        return 0;
+        self.instruction_pointer.as_integer +=1;
+
+        //Make a full VirconWord type that consists of all of the data.
+        return VirconWord::new();
     }
 
-    fn execute(&mut self, instruction: u32, immediate_value: u32)
+    fn execute(&mut self, instruction: u32, immediate_value_bit: u32)
     {
         /* Watch out if a hardware error happens */
 
@@ -88,7 +91,9 @@ impl Cpu {
         let addressing_mode: u32 = (instruction & 0b11111111111111111) >> 14;
         let port_number: u32 = instruction & 0b11111111111111;
 
-        match (opcode, immediate_value) {
+
+
+        match (opcode, immediate_value_bit) {
             /*-----------------------------------------------------*/
             //HLT
             (00, _) =>  {
@@ -104,155 +109,155 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //JMP variant 1
             (02, 1) => {
-                self.instruction_pointer = self.immediate_value;
+                self.instruction_pointer.as_integer = self.immediate_value.as_integer;
             }
             //JMP variant 2
             (02, 0) => {
-                self.instruction_pointer = self.registers[register_1];
+                self.instruction_pointer.as_integer = self.registers[register_1].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //CALL variant 1
             (03, 1) => {
-                self.stack_push(self.instruction_pointer);
-                self.instruction_pointer = self.immediate_value;
+                self.stack_push(self.instruction_pointer.as_integer);
+                self.instruction_pointer.as_integer = self.immediate_value.as_integer;
             }
             //CALL variant 2
             (03, 0) => {
-                self.stack_push(self.instruction_pointer);
-                self.instruction_pointer = self.registers[register_1];
+                self.stack_push(self.instruction_pointer.as_integer);
+                self.instruction_pointer.as_integer = self.registers[register_1].as_integer;
             }
 
             /*-----------------------------------------------------*/
             //RET
             (04, _) => {
-                self.registers[15] -= 1;
+                self.registers[15].as_integer -= 1;
 
-                self.instruction_pointer = self.stack[self.registers[15]];
+                self.instruction_pointer = self.stack[self.registers[15].as_integer];
             }
 
             /*-----------------------------------------------------*/
             //JT variant 1
             (05, 1) => {
-                if self.registers[register_1] != 0
+                if self.registers[register_1].as_integer != 0
                 {
-                    self.instruction_pointer = self.immediate_value;
+                    self.instruction_pointer.as_integer = self.immediate_value.as_integer;
                 }
             }
             //JT variant 2
             (05, 0) => {
-                if self.registers[register_1] != 0
+                if self.registers[register_1].as_integer != 0
                 {
-                    self.instruction_pointer = self.registers[register_2];
+                    self.instruction_pointer.as_integer = self.registers[register_2].as_integer;
                 }
             }
 
             /*-----------------------------------------------------*/
             //JF variant 1
             (06, 1) => {
-                if self.registers[register_1] == 0
+                if self.registers[register_1].as_integer == 0
                 {
-                    self.instruction_pointer = self.immediate_value;
+                    self.instruction_pointer.as_integer = self.immediate_value.as_integer;
                 }
             }
             //JF variant 2
             (06, 0) => {
-                if self.registers[register_1] == 0
+                if self.registers[register_1].as_integer == 0
                 {
-                    self.instruction_pointer = self.registers[register_2];
+                    self.instruction_pointer = self.registers[register_2].as_integer;
                 }
             }
 
             /*-----------------------------------------------------*/
             //EIQ variant 1
             (07, 1) => {
-                if self.registers[register_1] == self.immediate_value
+                if self.registers[register_1].as_integer == self.immediate_value
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else {
-                    self.registers[register_2] = 0;
+                    self.registers[register_2].as_integer = 0;
                 }
             }
             //EIQ variant 2
             (07, 0) => {
-                if self.registers[register_1] == self.registers[register_2]
+                if self.registers[register_1].as_integer == self.registers[register_2].as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else {
-                    self.registers[register_2] = 0;
+                    self.registers[register_2].as_integer = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //INE variant 1
             (08, 1) => {
-                if self.registers[register_1] != self.immediate_value
+                if self.registers[register_1].as_integer != self.immediate_value.as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else {
-                    self.registers[register_2] = 0;
+                    self.registers[register_2].as_integer = 0;
                 }
             }
             //INE variant 2
             (08, 0) => {
-                if self.registers[register_1] != self.registers[register_2]
+                if self.registers[register_1].as_integer != self.registers[register_2]
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else {
-                    self.registers[register_2] = 0;
+                    self.registers[register_2].as_integer = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //IGT variant 1
             (09, 1) => {
-                if self.registers[register_1] > self.immediate_value
+                if self.registers[register_1].as_integer > self.immediate_value.as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
             //IGT variant 2
             (09, 0) => {
-                if self.registers[register_1] > register_2
+                if self.registers[register_1].as_integer > self.registers[register_2].as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //IGE variant 1
             (10, 1) => {
-                if self.registers[register_1] >= self.immediate_value
+                if self.registers[register_1].as_integer >= self.immediate_value.as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
             //IGE variant 2
             (10, 0) => {
-                if self.registers[register_1] >= self.registers[register_2]
+                if self.registers[register_1].as_integer >= self.registers[register_2].as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
 
@@ -260,97 +265,96 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //ILT variant 1
             (11, 1) => {
-                if self.registers[register_1] < self.immediate_value
+                if self.registers[register_1].as_integer < self.immediate_value.as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
             //ILT variant 2
             (11, 0) => {
-                if self.registers[register_1] < self.registers[register_2]
+                if self.registers[register_1].as_integer < self.registers[register_2].as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //ILE variant 1
             (12, 1) => {
-                if self.registers[register_1] <= self.immediate_value
+                if self.registers[register_1].as_integer <= self.immediate_value.as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
             //ILT variant 2
             (12, 0) => {
-                if self.registers[register_1] <= self.registers[register_2]
+                if self.registers[register_1].as_integer <= self.registers[register_2].as_integer
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_integer = 0;
                 }
             }
 
-        /* TODO interpet these register values as floats */
             /*-----------------------------------------------------*/
             //FEQ variant 1
             (13, 1) => {
-                if self.registers[register_1] == self.immediate_value
+                if self.registers[register_1].as_float == self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FEQ variant 2
             (13, 0) => {
-                if self.registers[register_1] == self.registers[register_2]
+                if self.registers[register_1].as_float == self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //FNE variant 1
             (14, 1) => {
-                if self.registers[register_1] != self.immediate_value
+                if self.registers[register_1].as_float != self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FNE variant 2
             (14, 0) => {
-                if self.registers[register_1] != self.registers[register_2]
+                if self.registers[register_1].as_float != self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
@@ -358,24 +362,24 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //FGT variant 1
             (15, 1) => {
-                if self.registers[register_1] > self.immediate_value
+                if self.registers[register_1].as_float > self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FGT variant 2
             (15, 0) => {
-                if self.registers[register_1] > self.registers[register_2]
+                if self.registers[register_1].as_float > self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
@@ -383,75 +387,74 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //FGE variant 1
             (16, 1) => {
-                if self.registers[register_1] >= self.immediate_value
+                if self.registers[register_1].as_float >= self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FGT variant 2
             (16, 0) => {
-                if self.registers[register_1] >= self.registers[register_2]
+                if self.registers[register_1].as_float >= self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //FLT variant 1
             (17, 1) => {
-                if self.registers[register_1] < self.immediate_value
+                if self.registers[register_1].as_float < self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FLT variant 2
             (17, 0) => {
-                if self.registers[register_1] < self.registers[register_2]
+                if self.registers[register_1].as_float < self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
             /*-----------------------------------------------------*/
             //FLE variant 1
             (18, 1) => {
-                if self.registers[register_1] <= self.immediate_value
+                if self.registers[register_1].as_float <= self.immediate_value.as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
             //FLE variant 2
             (18, 0) => {
-                if self.registers[register_1] <= self.registers[register_2]
+                if self.registers[register_1].as_float <= self.registers[register_2].as_float
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
-        /* TODO end of sequence that has to be converted to float */
 
 
             /*-----------------------------------------------------*/
@@ -462,35 +465,35 @@ impl Cpu {
                 {
                     //variant 1
                     0 => {
-                        self.registers[register_1] = self.immediate_value;
+                        self.registers[register_1] = self.immediate_value.clone();
                     }
                     //variant 2
                     1 => {
-                        self.registers[register_1] = self.registers[register_2];
+                        self.registers[register_1] = self.registers[register_2].clone();
                     }
                     //variant 3
                     2 => {
-                        success = self.memory_bus.ram.read_address(self.immediate_value, &mut self.registers[register_1])
+                        success = self.memory_bus.ram.read_address(self.immediate_value.as_integer, &mut self.registers[register_1])
                     }
                     //variant 4
                     3 => {
-                        success = self.memory_bus.ram.read_address(self.registers[register_2], &mut self.registers[register_1]);
+                        success = self.memory_bus.ram.read_address(self.registers[register_2].as_integer, &mut self.registers[register_1]);
                     }
                     //variant 5
                     4 => {
-                        success = self.memory_bus.ram.read_address(self.registers[register_2] + self.immediate_value, self.registers[register_1]);
+                        success = self.memory_bus.ram.read_address(self.registers[register_2].as_integer + self.immediate_value.as_integer, &mut self.registers[register_1]);
                     }
                     //variant 6
                     5 => {
-                        success = self.memory_bus.ram.write_address(self.immediate_value, self.registers[register_2]);
+                        success = self.memory_bus.ram.write_address(self.immediate_value.as_integer, self.registers[register_2]);
                     }
                     //variant 7
                     6 => {
-                        success = self.memory_bus.ram.write_address(self.registers[register_1], self.registers[register_2]);
+                        success = self.memory_bus.ram.write_address(self.registers[register_1].as_integer, self.registers[register_2]);
                     }
                     //variant 8
                     7 => {
-                        success = self.memory_bus.ram.write_address(self.registers[register_1] + self.immediate_value, self.registers[register_2]);
+                        success = self.memory_bus.ram.write_address(self.registers[register_1].as_integer + self.immediate_value.as_integer, self.registers[register_2]);
                     }
                     _ => {
                         /* This should be impossible to reach, because the max value that 3 bits can hold is 7 */
@@ -507,11 +510,11 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //LEA variant 1
             (20, 0) => {
-                self.registers[register_1] = self.registers[register_2];
+                self.registers[register_1].as_integer = self.registers[register_2].as_integer;
             }
             //LEA variant 2
             (20, 1) => {
-                self.registers[register_1] = self.registers[register_2]+self.immediate_value;
+                self.registers[register_1].as_integer = self.registers[register_2].as_integer+self.immediate_value.as_integer;
             }
 
             /*-----------------------------------------------------*/
@@ -536,12 +539,12 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //OUT variant 1
             (24, 1) => {
-                self.control_bus.write_port(port_number as i32, self.immediate_value);
+                self.control_bus.write_port(port_number as i32, self.immediate_value.clone());
             }
 
             //OUT variant 2
             (24, 0) => {
-                self.control_bus.write_port(port_number as i32, self.registers[register_1]);
+                self.control_bus.write_port(port_number as i32, self.registers[register_1].clone());
             }
 
             /*-----------------------------------------------------*/
@@ -550,20 +553,20 @@ impl Cpu {
                 //memory[DR] = memory[SR]
                 let mut memory_sr = &mut self.registers[12];
 
-                let success = self.memory_bus.ram.read_address(self.registers[13], &mut memory_sr);
+                let success = self.memory_bus.ram.read_address(self.registers[13].as_integer, &mut memory_sr);
 
                 if !success {
                     //handle hardware error
                 }
 
                 //DR += 1
-                self.registers[13] = self.registers[13].overflowing_add(1).0;
+                self.registers[13].as_integer += 1;
 
                 //SR += 1
-                self.registers[12] = self.registers[12].overflowing_add(1).0;
+                self.registers[12].as_integer += 1;
 
                 //CR -= 1
-                self.registers[11] = self.registers[11].overflowing_sub(1).0;
+                self.registers[11].as_integer -= 1;
 
                 if self.registers[11] > 0
                 {
@@ -575,13 +578,13 @@ impl Cpu {
             //SETS
             (26, _) => {
                 // Memory[DR] = SR
-                self.memory_bus[self.registers[13]] = self.registers[12];
+                self.memory_bus.ram.write_address(self.registers[13].as_integer, self.registers[12].clone());
 
-                // DR += 1
-                self.registers[13] = self.registers[13].overflowing_add(1).0;
+                //DR += 1
+                self.registers[13].as_integer += 1;
 
-                // CR -= 1
-                self.registers[11] = self.registers[11].overflowing_sub(1).0;
+                //CR -= 1
+                self.registers[11].as_integer -= 1;
 
                 if self.registers[11] > 0
                 {
@@ -594,16 +597,16 @@ impl Cpu {
             //CMPS
             (27, _) => {
                 //register 1 = memory[DR] - Memory[SR]
-                let mut memory_dr = 0;
-                let mut memory_sr = 0;
+                let mut memory_dr: VirconWord = VirconWord::new();
+                let mut memory_sr: VirconWord = VirconWord::new();
                 let mut success: bool = false;
 
-                success = self.memory_bus.ram.read_address(self.registers[12], &mut memory_sr);
+                success = self.memory_bus.ram.read_address(self.registers[12].as_integer, &mut memory_sr);
                 if !success {
                     //handle hardware error
                 }
 
-                success = self.memory_bus.ram.read_address(self.registers[13], &mut memory_dr);
+                success = self.memory_bus.ram.read_address(self.registers[13].as_integer, &mut memory_dr);
                 if !success {
                     //handle hardware error
                 }
@@ -617,15 +620,15 @@ impl Cpu {
                 }
 
                 //DR += 1
-                self.registers[13] = self.registers[13].overflowing_add(1).0;
+                self.registers[13].as_integer += 1;
 
                 //SR += 1
-                self.registers[12] = self.registers[12].overflowing_add(1).0;
+                self.registers[12].as_integer += 1;
 
                 //CR -= 1
-                self.registers[11] = self.registers[11].overflowing_sub(1).0;
+                self.registers[11].as_integer -= 1;
 
-                if self.registers[11] > 0
+                if self.registers[11].as_integer > 0
                 {
                     self.instruction_pointer -= 1;
                 }
@@ -634,22 +637,22 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //CIF
             (28, _) => {
-                self.registers[register_1] = (i32_register_1 as f32) as i32; // TODO test this
+                self.registers[register_1].as_float = self.registers[register_1].as_integer as f32;
             }
 
             /*-----------------------------------------------------*/
             //CFI
             (29, _) => {
-                // TODO
+                self.registers[register_1].as_integer = self.registers[register_1].as_float as i32;
             }
 
 
             /*-----------------------------------------------------*/
             //CIB
             (30, _) => {
-                if self.registers[register_1] != 0
+                if self.registers[register_1].as_integer != 0
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_integer = 1;
                 }
             }
 
@@ -657,60 +660,65 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //CFB
             (31, _) => {
-                // TODO
+                if self.registers[register_1].as_float != 0.0 {
+                    self.registers[register_1].as_integer = 1;
+                }
+                else {
+                    self.registers[register_1].as_integer = 0;
+                }
             }
 
 
             /*-----------------------------------------------------*/
             //NOT
             (32, _) => {
-                self.registers[register_1] = !self.registers[register_1];
+                self.registers[register_1].as_binary = !self.registers[register_1].as_binary;
             }
 
 
             /*-----------------------------------------------------*/
             //AND variant 1
             (33, 1) => {
-                self.registers[register_1] = self.registers[register_1] & self.immediate_value;
+                self.registers[register_1].as_binary &= self.immediate_value.as_binary;
             }
             //AND variant 2
             (33, 0) => {
-                self.registers[register_1] = self.registers[register_1] & self.registers[register_2];
+                self.registers[register_1].as_binary &= self.registers[register_2].as_binary;
             }
 
 
             /*-----------------------------------------------------*/
             //OR variant 1
             (34, 1) => {
-                self.registers[register_1] = self.registers[register_1] | self.immediate_value;
+                self.registers[register_1].as_binary |= self.immediate_value.as_binary;
             }
             //OR variant 2
             (34, 0) => {
-                self.registers[register_1] = self.registers[register_1] | self.registers[register_2];
+                self.registers[register_1].as_binary |= self.registers[register_2].as_binary;
             }
 
 
             /*-----------------------------------------------------*/
             //XOR variant 1
             (35, 1) => {
-                self.registers[register_1] = self.registers[register_1] ^ self.immediate_value;
+                self.registers[register_1].as_binary ^= self.immediate_value.as_binary;
             }
             //XOR variant 2
             (35, 0) => {
-                self.registers[register_1] = self.registers[register_1] ^ self.registers[register_2];
+                self.registers[register_1].as_binary ^= self.registers[register_2].as_binary;
             }
 
 
             /*-----------------------------------------------------*/
             //BNOT
             (36, _) => {
-                if self.registers[register_1] == 0
+                if self.registers[register_1].as_binary == 0
                 {
-                    self.registers[register_1] = 1;
+                    self.registers[register_1].as_binary = 1;
                 }
                 else
                 {
-                    self.registers[register_1] = 0;
+                    self.registers[register_1].as_binary = 0;
                 }
             }
 
@@ -719,25 +727,25 @@ impl Cpu {
             //SHL variant 1
             (37, 1) => {
                 // Allow negative shifts
-                if self.immediate_value > 0
+                if self.immediate_value.as_integer > 0
                 {
-                    self.registers[register_1] <<= self.immediate_value;
+                    self.registers[register_1].as_binary <<= self.immediate_value.as_integer;
                 }
                 else
                 {
-                    self.registers[register_1] >>= -self.immediate_value;
+                    self.registers[register_1].as_binary >>= -self.immediate_value.as_integer;
                 }
             }
             //SHL variant 2
             (37, 0) => {
                 // Allow negative shifts
-                if self.registers[register_2] > 0
+                if self.registers[register_2].as_integer > 0
                 {
-                    self.registers[register_1] <<= self.registers[register_2];
+                    self.registers[register_1].as_binary <<= self.registers[register_2].as_integer;
                 }
                 else
                 {
-                    self.registers[register_1] >>= -self.registers[register_2];
+                    self.registers[register_1].as_binary >>= -self.registers[register_2].as_integer;
                 }
             }
 
@@ -745,92 +753,92 @@ impl Cpu {
             /*-----------------------------------------------------*/
             //IADD variant 1
             (38, 1) => {
-                self.registers[register_1] += self.immediate_value;
+                self.registers[register_1].as_integer += self.immediate_value.as_integer;
             }
             //IADD variant 2
             (38, 0) => {
-                self.registers[register_1] += self.registers[register_2];
+                self.registers[register_1].as_integer += self.registers[register_2].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //ISUB variant 1
             (39, 1) => {
-                self.registers[register_1] -= self.immediate_value;
+                self.registers[register_1].as_integer -= self.immediate_value.as_integer;
             }
             //ISUB variant 2
             (39, 0) => {
-                self.registers[register_1] -= self.registers[register_2];
+                self.registers[register_1].as_integer -= self.registers[register_2].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //IMUL variant 1
             (40, 1) => {
-                self.registers[register_1] *= self.immediate_value;
+                self.registers[register_1].as_integer *= self.immediate_value.as_integer;
             }
             //IMUL variant 2
             (40, 0) => {
-                self.registers[register_1] *= self.registers[register_2];
+                self.registers[register_1].as_integer *= self.registers[register_2].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //IDIV variant 1
             (41, 1) => {
-                self.registers[register_1] /= self.immediate_value;
+                self.registers[register_1].as_integer /= self.immediate_value.as_integer;
             }
             //IDIV variant 2
             (41, 0) => {
-                self.registers[register_1] /= self.registers[register_2];
+                self.registers[register_1].as_integer /= self.registers[register_2].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //IMOD variant 1
             (42, 1) => {
-                self.registers[register_1] %= self.immediate_value;
+                self.registers[register_1].as_integer %= self.immediate_value.as_integer;
             }
             //IMOD variant 2
             (42, 0) => {
-                self.registers[register_1] %= self.registers[register_2];
+                self.registers[register_1].as_integer %= self.registers[register_2].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //ISIGN
             (43, _) => {
-                self.registers[register_1] = -self.registers[register_1];
+                self.registers[register_1].as_integer = -self.registers[register_1].as_integer;
             }
 
 
             /*-----------------------------------------------------*/
             //IMIN variant 1
             (44, 1) => {
-                self.registers[register_1] = min(self.registers[register_1], self.immediate_value);
+                self.registers[register_1].as_integer = min(self.registers[register_1].as_integer, self.immediate_value.as_integer);
             }
             //IMIN variant 2
             (44, 0) => {
-                self.registers[register_1] = min(self.registers[register_1], self.registers[register_2]);
+                self.registers[register_1].as_integer = min(self.registers[register_1].as_integer, self.registers[register_2].as_integer);
             }
 
 
             /*-----------------------------------------------------*/
             //IMAX variant 1
             (45, 1) => {
-                self.registers[register_1] = max(self.registers[register_1], self.immediate_value);
+                self.registers[register_1].as_integer = max(self.registers[register_1].as_integer, self.immediate_value.as_integer);
             }
             //IMAX variant 2
             (45, 0) => {
-                self.registers[register_1] = max(self.registers[register_1], self.registers[register_2]);
+                self.registers[register_1].as_integer = max(self.registers[register_1].as_integer, self.registers[register_2].as_integer);
             }
 
             /*-----------------------------------------------------*/
             //IABS
             (46, _) => {
-                if self.registers[register_1] < 0
+                if self.registers[register_1].as_integer < 0
                 {
-                    self.registers[register_1] = -self.registers[register_1];
+                    self.registers[register_1].as_integer = -self.registers[register_1].as_integer;
                 }
             }
 

@@ -3,6 +3,7 @@ use crate::components::memory_card_controller::{MemoryCardController};
 use crate::components::ram::Ram;
 use crate::components::vircon_component::VirconComponent;
 use crate::constants::MEMORY_BUS_PREFIX;
+use crate::vircon_word::VirconWord;
 
 pub struct MemoryBus {
     pub ram: Ram,
@@ -18,7 +19,7 @@ impl MemoryBus {
         }
     }
 
-    pub fn read_port(&mut self, global_port: i32, mut result: &mut i32) -> bool
+    pub fn read_port(&mut self, global_port: i32, mut result: &mut VirconWord) -> bool
     {
         info!("{} Reading global port {}", MEMORY_BUS_PREFIX, global_port);
 
@@ -33,9 +34,9 @@ impl MemoryBus {
         //Don't handle hardware errors for now
     }
 
-    pub fn write_port(&mut self, global_port: i32, value: i32) -> bool
+    pub fn write_port(&mut self, global_port: i32, value: VirconWord) -> bool
     {
-        info!("{} Writing value \"{}\" to global port \"{}\"", MEMORY_BUS_PREFIX, value, global_port);
+        info!("{} Writing value \"{}\" to global port \"{}\"", MEMORY_BUS_PREFIX, value.as_integer, global_port);
 
         // separate device ID and local address
         let device_id: i32 = (global_port >> 8) & 7;
@@ -51,7 +52,7 @@ impl MemoryBus {
 
     fn device_id_to_slave(&mut self, device_id: i32) -> Box<&dyn VirconComponent>
     {
-        match device_id {
+        match device_id.as_integer {
             0 => {
                 return Box::new(&self.ram);
             }

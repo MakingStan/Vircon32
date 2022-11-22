@@ -18,3 +18,22 @@ pub enum CartridgeControllerLocalPorts {
     NumberOfTextures,
     NumberOfSounds,
 }
+
+
+// Gamepad controller local ports
+pub enum GamepadControllerLocalPorts {
+    SelectedGamepad = 0,
+
+    GamepadConnected,
+    GamepadLeft,
+    GamepadRight,
+    GamepadUp,
+    GamepadDown,
+    GamepadButtonStart,
+    GamepadButtonA,
+    GamepadButtonB,
+    GamepadButtonX,
+    GamepadButtonY,
+    GamepadButtonL,
+    GamepadButtonR
+}

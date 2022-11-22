@@ -2,6 +2,7 @@ use log::info;
 use crate::components::vircon_component::VirconComponent;
 use crate::constants::RNG_PREFIX;
 use crate::local_ports::RngLocalPorts;
+use crate::vircon_word::VirconWord;
 
 pub struct Rng {
     current_value: i32,
@@ -26,7 +27,7 @@ impl Rng()
 }
 
 impl VirconComponent for Rng {
-    fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+    fn read_port(&mut self, local_port: i32, result: &mut VirconWord) -> bool {
         info!("{} Reading local port \"{}\"", RNG_PREFIX, local_port);
 
         //Check range
@@ -34,18 +35,18 @@ impl VirconComponent for Rng {
             return false;
         }
 
-        *result = self.current_value;
+        *result.as_integer = self.current_value;
 
         //determine the next value, with the formula
         //of a linear congruential generator
         let mut aux: i32 = self.current_value;
         aux *= 48271;
-        self.current_value = 0x7FFFFFFF;
+        self.current_value = aux % 0x7FFFFFFF;
 
         return true;
     }
 
-    fn write_port(&mut self, local_port: i32, value: i32) -> bool {
+    fn write_port(&mut self, local_port: i32, value: VirconWord) -> bool {
         info!("{} Writing value \"{}\" to local port \"{}\"", RNG_PREFIX, value, local_port);
 
         //Check range

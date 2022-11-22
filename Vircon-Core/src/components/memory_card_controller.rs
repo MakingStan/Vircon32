@@ -2,19 +2,20 @@ use log::info;
 use crate::constants::MEMORY_CARD_CONTROLLER_PREFIX;
 use crate::constants::MEMORY_CARD_SIZE;
 use crate::components::vircon_component::VirconComponent;
+use crate::vircon_word::VirconWord;
 
 pub struct MemoryCardController {
-    memory: [u32; MEMORY_CARD_SIZE as usize] // assuming it's always plugged in
+    memory: [VirconWord; MEMORY_CARD_SIZE as usize] // assuming it's always plugged in
 }
 
 impl VirconComponent for MemoryCardController {
-    fn read_port(&mut self, local_port: i32, result: &mut i32) -> bool {
+    fn read_port(&mut self, local_port: i32, result: &mut VirconWord) -> bool {
         info!("{} Reading local port \"{}\"", MEMORY_CARD_CONTROLLER_PREFIX,  local_port);
         todo!()
     }
 
-    fn write_port(&mut self, local_port: i32, value: i32) -> bool {
-        info!("{} Writing value \"{}\" to local port \"{}\"", MEMORY_CARD_CONTROLLER_PREFIX, value, local_port);
+    fn write_port(&mut self, local_port: i32, value: VirconWord) -> bool {
+        info!("{} Writing value \"{}\" to local port \"{}\"", MEMORY_CARD_CONTROLLER_PREFIX, value.as_integer, local_port);
         todo!()
     }
 }
@@ -24,7 +25,7 @@ impl MemoryCardController {
         info!("{} Creating new MemoryCardController...", MEMORY_CARD_CONTROLLER_PREFIX);
         MemoryCardController
         {
-            memory: [0; MEMORY_CARD_SIZE]
+            memory: [VirconWord::new(); MEMORY_CARD_SIZE]
         }
     }
 
@@ -59,6 +60,8 @@ impl MemoryCardController {
         }
 
         //copy the data into memory
-        self.memory[0..new_data.len()].copy_from_slice(new_data.as_slice());
+        for (i, word) in new_data.iter().enumerate() {
+            self.memory[i].as_binary = *word;
+        }
     }
 }

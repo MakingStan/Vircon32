@@ -4,6 +4,7 @@ mod buses;
 mod cpu;
 mod constants;
 mod local_ports;
+mod vircon_word;
 
 use crate::cpu::Cpu;
 
